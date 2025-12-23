@@ -6,7 +6,7 @@
 <?import javafx.scene.text.Font?>
 
 <BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
-            fx:controller="com.biblioteka.controller.MainController"
+            fx:controller="com.biblioteka.controller.UserMainController"
             prefHeight="700" prefWidth="1000" stylesheets="@styles.css">
 
     <top>
@@ -24,18 +24,8 @@
             </HBox>
 
             <ToolBar style="-fx-background-color: #34495e; -fx-padding: 10;">
-                <Button fx:id="addButton" text="➕ Dodaj" onAction="#handleAddBook"
-                        style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold;"/>
-                <Button fx:id="editButton" text="✏️ Uredi" onAction="#handleEditBook"
-                        style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-weight: bold;"/>
-                <Button fx:id="deleteButton" text="🗑️ Obriši" onAction="#handleDeleteBook"
-                        style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold;"/>
-                <Separator orientation="VERTICAL"/>
-                <Button fx:id="borrowButton" text="📖 Pozajmi" onAction="#handleBorrowBook"
+                <Button text="📖 Pozajmi" onAction="#handleBorrowBook"
                         style="-fx-background-color: #f39c12; -fx-text-fill: white; -fx-font-weight: bold;"/>
-                <Separator orientation="VERTICAL"/>
-                <Button fx:id="exportButton" text="📄 Export PDF" onAction="#handleExportPDF"
-                        style="-fx-background-color: #9b59b6; -fx-text-fill: white; -fx-font-weight: bold;"/>
                 <Button text="🔄 Osvježi" onAction="#handleRefresh"
                         style="-fx-background-color: #16a085; -fx-text-fill: white; -fx-font-weight: bold;"/>
                 <Region HBox.hgrow="ALWAYS"/>
@@ -66,7 +56,7 @@
 
     <bottom>
         <HBox alignment="CENTER" style="-fx-background-color: #ecf0f1; -fx-padding: 10;">
-            <Label text="© 2024 Biblioteka - Sistem za upravljanje knjigama"
+            <Label text="© 2025 Biblioteka - Sistem za upravljanje knjigama"
                    style="-fx-text-fill: #7f8c8d; -fx-font-size: 11;"/>
         </HBox>
     </bottom>

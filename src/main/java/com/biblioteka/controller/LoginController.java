@@ -1,6 +1,5 @@
 package com.biblioteka.controller;
 
-
 import com.biblioteka.dao.UserDAO;
 import com.biblioteka.model.User;
 import javafx.fxml.FXML;
@@ -43,11 +42,19 @@ public class LoginController {
 
     private void openMainWindow(User user) {
         try {
-            FXMLLoader loader = new FXMLLoader(LoginController.class.getResource("/com/biblioteka/view/main.fxml"));
+            boolean isAdmin = "ADMIN".equalsIgnoreCase(user.getRole());
+            String fxmlPath = isAdmin ? "/com/biblioteka/view/admin_main.fxml" : "/com/biblioteka/view/user_main.fxml";
+
+            FXMLLoader loader = new FXMLLoader(LoginController.class.getResource(fxmlPath));
             Parent root = loader.load();
 
-            MainController controller = loader.getController();
-            controller.setCurrentUser(user);
+            if (isAdmin) {
+                AdminMainController controller = loader.getController();
+                controller.setCurrentUser(user);
+            } else {
+                UserMainController controller = loader.getController();
+                controller.setCurrentUser(user);
+            }
 
             Stage stage = (Stage) usernameField.getScene().getWindow();
             stage.setScene(new Scene(root, 1000, 700));

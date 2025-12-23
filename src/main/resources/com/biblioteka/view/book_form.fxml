@@ -7,7 +7,7 @@
 
 <BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
             fx:controller="com.biblioteka.controller.BookFormController"
-            prefHeight="450" prefWidth="500" style="-fx-background-color: #ecf0f1;">
+            prefHeight="500" prefWidth="500" style="-fx-background-color: #ecf0f1;">
 
     <top>
         <HBox alignment="CENTER" style="-fx-background-color: #3498db; -fx-padding: 20;">
@@ -51,6 +51,12 @@
                        style="-fx-font-weight: bold;"/>
                 <TextField fx:id="priceField" GridPane.columnIndex="1" GridPane.rowIndex="4"
                            promptText="Unesite cijenu" style="-fx-pref-height: 35;"/>
+
+                <!-- Dodano polje za unos količine knjiga -->
+                <Label text="Količina:" GridPane.columnIndex="0" GridPane.rowIndex="5"
+                       style="-fx-font-weight: bold;"/>
+                <TextField fx:id="quantityField" GridPane.columnIndex="1" GridPane.rowIndex="5"
+                           promptText="Unesite broj dostupnih primjeraka" style="-fx-pref-height: 35;"/>
             </GridPane>
 
             <HBox spacing="15" alignment="CENTER" style="-fx-padding: 20 0 0 0;">
