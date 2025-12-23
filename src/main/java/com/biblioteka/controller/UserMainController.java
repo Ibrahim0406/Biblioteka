@@ -29,10 +29,16 @@ public class UserMainController {
     @FXML private TableColumn<Book, Integer> quantityColumn;
     @FXML private TextField searchField;
 
+    @FXML private TableView<Loan> loansTable;
+    @FXML private TableColumn<Loan, Integer> loanIdColumn;
+    @FXML private TableColumn<Loan, String> loanBookTitleColumn;
+    @FXML private TableColumn<Loan, LocalDate> loanDateColumn;
+
     private User currentUser;
     private BookDAO bookDAO = new BookDAO();
     private LoanDAO loanDAO = new LoanDAO();
     private ObservableList<Book> booksList = FXCollections.observableArrayList();
+    private ObservableList<Loan> loansList = FXCollections.observableArrayList();
 
     @FXML
     public void initialize() {
@@ -108,8 +114,26 @@ public class UserMainController {
             }
         });
 
+        loanIdColumn.setCellValueFactory(cellData -> {
+            Loan loan = cellData.getValue();
+            return loan != null ? loan.idProperty().asObject() : null;
+        });
+
+        loanBookTitleColumn.setCellValueFactory(cellData -> {
+            Loan loan = cellData.getValue();
+            return loan != null ? loan.bookTitleProperty() : null;
+        });
+
+        loanDateColumn.setCellValueFactory(cellData -> {
+            Loan loan = cellData.getValue();
+            return loan != null ? loan.loanDateProperty() : null;
+        });
+
         booksTable.setStyle("-fx-text-base-color: #2c3e50;");
         booksTable.setItems(booksList);
+        loansTable.setStyle("-fx-text-base-color: #2c3e50;");
+        loansTable.setItems(loansList);
+
         loadBooks();
 
         searchField.textProperty().addListener((obs, oldVal, newVal) -> filterBooks(newVal));
@@ -118,6 +142,7 @@ public class UserMainController {
     public void setCurrentUser(User user) {
         this.currentUser = user;
         welcomeLabel.setText("Dobrodošli: " + user.getFullName() + " (Korisnik)");
+        loadUserLoans();
     }
 
     private void loadBooks() {
@@ -127,6 +152,19 @@ public class UserMainController {
             booksList.addAll(books);
         } catch (Exception e) {
             showAlert("Greška", "Greška pri učitavanju knjiga: " + e.getMessage(), Alert.AlertType.ERROR);
+            e.printStackTrace();
+        }
+    }
+
+    private void loadUserLoans() {
+        try {
+            loansList.clear();
+            if (currentUser != null) {
+                java.util.List<Loan> loans = loanDAO.getLoansByBorrower(currentUser.getFullName());
+                loansList.addAll(loans);
+            }
+        } catch (Exception e) {
+            showAlert("Greška", "Greška pri učitavanju pozajmica: " + e.getMessage(), Alert.AlertType.ERROR);
             e.printStackTrace();
         }
     }
@@ -183,6 +221,7 @@ public class UserMainController {
                 bookDAO.decreaseQuantity(selected.getId());
 
                 loadBooks();
+                loadUserLoans();
                 showAlert("Uspjeh", "Knjiga uspješno pozajmljena!", Alert.AlertType.INFORMATION);
             } catch (Exception e) {
                 showAlert("Greška", "Greška pri pozajmljivanju: " + e.getMessage(), Alert.AlertType.ERROR);
@@ -192,9 +231,44 @@ public class UserMainController {
     }
 
     @FXML
+    private void handleReturnBook() {
+        Loan selected = loansTable.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            showAlert("Upozorenje", "Molimo odaberite knjigu za vraćanje!", Alert.AlertType.WARNING);
+            return;
+        }
+
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+        confirm.setTitle("Potvrda vraćanja");
+        confirm.setHeaderText("Da li želite vratiti ovu knjigu?");
+        confirm.setContentText(selected.getBookTitle());
+
+        Optional<ButtonType> result = confirm.showAndWait();
+        if (result.isPresent() && result.get() == ButtonType.OK) {
+            try {
+                // Mark loan as returned
+                loanDAO.returnBook(selected.getId());
+
+                // Increase book quantity back
+                bookDAO.increaseQuantity(selected.getBookId());
+
+                // Reload both tables
+                loadBooks();
+                loadUserLoans();
+
+                showAlert("Uspjeh", "Knjiga uspješno vraćena!", Alert.AlertType.INFORMATION);
+            } catch (Exception e) {
+                showAlert("Greška", "Greška pri vraćanju knjige: " + e.getMessage(), Alert.AlertType.ERROR);
+                e.printStackTrace();
+            }
+        }
+    }
+
+    @FXML
     private void handleRefresh() {
         searchField.clear();
         loadBooks();
+        loadUserLoans();
     }
 
     @FXML
