@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+
+<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.biblioteka.controller.BookFormController"
+            prefHeight="450" prefWidth="500" style="-fx-background-color: #ecf0f1;">
+
+    <top>
+        <HBox alignment="CENTER" style="-fx-background-color: #3498db; -fx-padding: 20;">
+            <Label text="PODACI O KNJIZI" textFill="white">
+                <font>
+                    <Font name="System Bold" size="18"/>
+                </font>
+            </Label>
+        </HBox>
+    </top>
+
+    <center>
+        <VBox spacing="15" style="-fx-padding: 30;">
+            <GridPane hgap="15" vgap="15">
+                <columnConstraints>
+                    <ColumnConstraints hgrow="NEVER" minWidth="100"/>
+                    <ColumnConstraints hgrow="ALWAYS"/>
+                </columnConstraints>
+
+                <Label text="Naslov:" GridPane.columnIndex="0" GridPane.rowIndex="0"
+                       style="-fx-font-weight: bold;"/>
+                <TextField fx:id="titleField" GridPane.columnIndex="1" GridPane.rowIndex="0"
+                           promptText="Unesite naslov knjige" style="-fx-pref-height: 35;"/>
+
+                <Label text="Autor:" GridPane.columnIndex="0" GridPane.rowIndex="1"
+                       style="-fx-font-weight: bold;"/>
+                <TextField fx:id="authorField" GridPane.columnIndex="1" GridPane.rowIndex="1"
+                           promptText="Unesite ime autora" style="-fx-pref-height: 35;"/>
+
+                <Label text="ISBN:" GridPane.columnIndex="0" GridPane.rowIndex="2"
+                       style="-fx-font-weight: bold;"/>
+                <TextField fx:id="isbnField" GridPane.columnIndex="1" GridPane.rowIndex="2"
+                           promptText="Unesite ISBN broj" style="-fx-pref-height: 35;"/>
+
+                <Label text="Godina:" GridPane.columnIndex="0" GridPane.rowIndex="3"
+                       style="-fx-font-weight: bold;"/>
+                <TextField fx:id="yearField" GridPane.columnIndex="1" GridPane.rowIndex="3"
+                           promptText="Unesite godinu izdanja" style="-fx-pref-height: 35;"/>
+
+                <Label text="Cijena (KM):" GridPane.columnIndex="0" GridPane.rowIndex="4"
+                       style="-fx-font-weight: bold;"/>
+                <TextField fx:id="priceField" GridPane.columnIndex="1" GridPane.rowIndex="4"
+                           promptText="Unesite cijenu" style="-fx-pref-height: 35;"/>
+            </GridPane>
+
+            <HBox spacing="15" alignment="CENTER" style="-fx-padding: 20 0 0 0;">
+                <Button fx:id="saveButton" text="Sačuvaj" onAction="#handleSave"
+                        style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold; -fx-pref-width: 150; -fx-pref-height: 40; -fx-font-size: 14;"/>
+                <Button text="Otkaži" onAction="#handleCancel"
+                        style="-fx-background-color: #95a5a6; -fx-text-fill: white; -fx-font-weight: bold; -fx-pref-width: 150; -fx-pref-height: 40; -fx-font-size: 14;"/>
+            </HBox>
+        </VBox>
+    </center>
+
+    <bottom>
+        <HBox alignment="CENTER" style="-fx-background-color: #bdc3c7; -fx-padding: 10;">
+            <Label text="* Sva polja su obavezna" style="-fx-text-fill: #34495e; -fx-font-size: 11; -fx-font-style: italic;"/>
+        </HBox>
+    </bottom>
+</BorderPane>
