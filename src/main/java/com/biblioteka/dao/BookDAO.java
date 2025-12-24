@@ -2,6 +2,7 @@ package com.biblioteka.dao;
 
 import com.biblioteka.database.DatabaseConnection;
 import com.biblioteka.model.Book;
+import com.biblioteka.model.BookWithRating;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -77,6 +78,84 @@ public class BookDAO implements DAO<Book> {
                         rs.getDouble("price"),
                         status,
                         availableQuantity
+                ));
+            }
+        }
+        return books;
+    }
+
+    public List<BookWithRating> getAllBooksWithRatings() throws Exception {
+        List<BookWithRating> books = new ArrayList<>();
+        String sql = "SELECT b.*, " +
+                "COALESCE(AVG(r.rating), 0) as avg_rating, " +
+                "COUNT(r.id) as review_count " +
+                "FROM books b " +
+                "LEFT JOIN reviews r ON b.id = r.book_id " +
+                "GROUP BY b.id " +
+                "ORDER BY b.title";
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+
+            while (rs.next()) {
+                String status = rs.getString("status");
+                int availableQuantity = rs.getInt("available_quantity");
+                if (status == null) status = "DOSTUPNO";
+                if (availableQuantity == 0) availableQuantity = 1;
+
+                books.add(new BookWithRating(
+                        rs.getInt("id"),
+                        rs.getString("title"),
+                        rs.getString("author"),
+                        rs.getString("isbn"),
+                        rs.getInt("year"),
+                        rs.getDouble("price"),
+                        status,
+                        availableQuantity,
+                        rs.getDouble("avg_rating"),
+                        rs.getInt("review_count")
+                ));
+            }
+        }
+        return books;
+    }
+
+    public List<BookWithRating> getMostPopularBooks(int limit) throws Exception {
+        List<BookWithRating> books = new ArrayList<>();
+        String sql = "SELECT b.*, " +
+                "COALESCE(AVG(r.rating), 0) as avg_rating, " +
+                "COUNT(r.id) as review_count " +
+                "FROM books b " +
+                "LEFT JOIN reviews r ON b.id = r.book_id " +
+                "GROUP BY b.id " +
+                "HAVING review_count > 0 " +
+                "ORDER BY avg_rating DESC, review_count DESC " +
+                "LIMIT ?";
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, limit);
+            ResultSet rs = pstmt.executeQuery();
+
+            while (rs.next()) {
+                String status = rs.getString("status");
+                int availableQuantity = rs.getInt("available_quantity");
+                if (status == null) status = "DOSTUPNO";
+                if (availableQuantity == 0) availableQuantity = 1;
+
+                books.add(new BookWithRating(
+                        rs.getInt("id"),
+                        rs.getString("title"),
+                        rs.getString("author"),
+                        rs.getString("isbn"),
+                        rs.getInt("year"),
+                        rs.getDouble("price"),
+                        status,
+                        availableQuantity,
+                        rs.getDouble("avg_rating"),
+                        rs.getInt("review_count")
                 ));
             }
         }

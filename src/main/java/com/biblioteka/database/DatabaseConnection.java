@@ -60,7 +60,7 @@ public class DatabaseConnection {
             } catch (SQLException e) {
                 // Ignoriši grešku
             }
-            
+
             // Ažuriranje postojećih knjiga da imaju default vrijednosti
             try {
                 stmt.execute("UPDATE books SET status = 'DOSTUPNO' WHERE status IS NULL");
@@ -80,6 +80,30 @@ public class DatabaseConnection {
                             "FOREIGN KEY (book_id) REFERENCES books(id) ON DELETE CASCADE)"
             );
 
+            // Kreiranje tabele za recenzije i ocjene
+            stmt.execute(
+                    "CREATE TABLE IF NOT EXISTS reviews (" +
+                            "id INT AUTO_INCREMENT PRIMARY KEY, " +
+                            "book_id INT NOT NULL, " +
+                            "username VARCHAR(50) NOT NULL, " +
+                            "rating INT NOT NULL CHECK (rating BETWEEN 1 AND 5), " +
+                            "comment TEXT, " +
+                            "review_date DATE NOT NULL, " +
+                            "FOREIGN KEY (book_id) REFERENCES books(id) ON DELETE CASCADE, " +
+                            "UNIQUE KEY unique_user_book (username, book_id))"
+            );
+
+            stmt.execute(
+                    "CREATE TABLE IF NOT EXISTS reservations (" +
+                            "id INT AUTO_INCREMENT PRIMARY KEY, " +
+                            "book_id INT NOT NULL, " +
+                            "book_title VARCHAR(255) NOT NULL, " +
+                            "username VARCHAR(50) NOT NULL, " +
+                            "reservation_date DATE NOT NULL, " +
+                            "status VARCHAR(20) DEFAULT 'AKTIVNA', " +
+                            "FOREIGN KEY (book_id) REFERENCES books(id) ON DELETE CASCADE)"
+            );
+
             // Dodavanje default korisnika ako ne postoji
             String checkAdmin = "SELECT COUNT(*) FROM users WHERE username = 'admin'";
             ResultSet rs = stmt.executeQuery(checkAdmin);
@@ -89,7 +113,7 @@ public class DatabaseConnection {
                                 "VALUES ('admin', 'admin123', 'Administrator', 'ADMIN')"
                 );
             }
-            
+
             // Dodavanje default korisnika za testiranje
             String checkUser = "SELECT COUNT(*) FROM users WHERE username = 'korisnik'";
             rs = stmt.executeQuery(checkUser);

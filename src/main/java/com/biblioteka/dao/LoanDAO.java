@@ -30,7 +30,7 @@ public class LoanDAO implements DAO<Loan> {
     @Override
     public Loan read(int id) throws Exception {
         String sql = "SELECT l.*, b.title as book_title FROM loans l " +
-                     "JOIN books b ON l.book_id = b.id WHERE l.id = ?";
+                "JOIN books b ON l.book_id = b.id WHERE l.id = ?";
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
@@ -57,7 +57,7 @@ public class LoanDAO implements DAO<Loan> {
     public List<Loan> readAll() throws Exception {
         List<Loan> loans = new ArrayList<>();
         String sql = "SELECT l.*, b.title as book_title FROM loans l " +
-                     "JOIN books b ON l.book_id = b.id ORDER BY l.loan_date DESC";
+                "JOIN books b ON l.book_id = b.id ORDER BY l.loan_date DESC";
 
         try (Connection conn = DatabaseConnection.getConnection();
              Statement stmt = conn.createStatement();
@@ -113,9 +113,9 @@ public class LoanDAO implements DAO<Loan> {
     public List<Loan> getLoansByBorrower(String borrower) throws Exception {
         List<Loan> loans = new ArrayList<>();
         String sql = "SELECT l.*, b.title as book_title FROM loans l " +
-                     "JOIN books b ON l.book_id = b.id " +
-                     "WHERE l.borrower = ? AND l.return_date IS NULL " +
-                     "ORDER BY l.loan_date DESC";
+                "JOIN books b ON l.book_id = b.id " +
+                "WHERE l.borrower = ? AND l.return_date IS NULL " +
+                "ORDER BY l.loan_date DESC";
 
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -148,5 +148,77 @@ public class LoanDAO implements DAO<Loan> {
             pstmt.executeUpdate();
         }
     }
-}
 
+    // Metoda za dohvaćanje historije vraćenih knjiga
+    public List<Loan> getReturnedLoansByUser(String username) throws Exception {
+        List<Loan> loans = new ArrayList<>();
+        String sql = "SELECT l.*, b.title as book_title FROM loans l " +
+                "JOIN books b ON l.book_id = b.id " +
+                "WHERE l.borrower = ? AND l.return_date IS NOT NULL " +
+                "ORDER BY l.return_date DESC";
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, username);
+            ResultSet rs = pstmt.executeQuery();
+
+            while (rs.next()) {
+                loans.add(new Loan(
+                        rs.getInt("id"),
+                        rs.getInt("book_id"),
+                        rs.getString("book_title"),
+                        rs.getString("borrower"),
+                        rs.getDate("loan_date").toLocalDate(),
+                        rs.getDate("return_date").toLocalDate()
+                ));
+            }
+        }
+        return loans;
+    }
+
+    public List<Loan> getReturnedLoansByUserAndBook(String username, int bookId) throws Exception {
+        List<Loan> loans = new ArrayList<>();
+        String sql = "SELECT l.*, b.title as book_title FROM loans l " +
+                "JOIN books b ON l.book_id = b.id " +
+                "WHERE l.borrower = ? AND l.book_id = ? AND l.return_date IS NOT NULL " +
+                "ORDER BY l.return_date DESC";
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, username);
+            pstmt.setInt(2, bookId);
+            ResultSet rs = pstmt.executeQuery();
+
+            while (rs.next()) {
+                loans.add(new Loan(
+                        rs.getInt("id"),
+                        rs.getInt("book_id"),
+                        rs.getString("book_title"),
+                        rs.getString("borrower"),
+                        rs.getDate("loan_date").toLocalDate(),
+                        rs.getDate("return_date").toLocalDate()
+                ));
+            }
+        }
+        return loans;
+    }
+
+    // Metoda za provjeru da li je korisnik pročitao knjigu
+    public boolean hasUserReturnedBook(String username, int bookId) throws Exception {
+        String sql = "SELECT COUNT(*) FROM loans WHERE borrower = ? AND book_id = ? AND return_date IS NOT NULL";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, username);
+            pstmt.setInt(2, bookId);
+            ResultSet rs = pstmt.executeQuery();
+
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
+            }
+        }
+        return false;
+    }
+}
