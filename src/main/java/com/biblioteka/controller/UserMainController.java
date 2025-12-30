@@ -19,6 +19,8 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
 import javafx.stage.Modality;
+
+import java.util.List;
 import java.util.Optional;
 
 public class UserMainController {
@@ -347,35 +349,59 @@ public class UserMainController {
             return;
         }
 
-        if (selected.getAvailableQuantity() > 0) {
-            showAlert("Upozorenje", "Ova knjiga je trenutno dostupna za pozajmljivanje. Nema potrebe za rezervacijom!", Alert.AlertType.INFORMATION);
+        // Provjera da li je knjiga dostupna - ako jeste, ne treba rezervacija
+        if (selected.getAvailableQuantity() > 0 && "DOSTUPNO".equals(selected.getStatus())) {
+            showAlert("Informacija", "Knjiga '" + selected.getTitle() + "' je trenutno dostupna za pozajmljivanje.\n\n" +
+                            "Možete je direktno pozajmiti bez potrebe za rezervacijom!",
+                    Alert.AlertType.INFORMATION);
             return;
         }
 
-        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
-        confirm.setTitle("Potvrda rezervacije");
-        confirm.setHeaderText("Da li želite rezervisati ovu knjigu?");
-        confirm.setContentText(selected.getTitle() + " - " + selected.getAuthor() +
-                "\n\nBićete obavješteni kada knjiga postane dostupna.");
-
-        Optional<ButtonType> result = confirm.showAndWait();
-        if (result.isPresent() && result.get() == ButtonType.OK) {
+        // Provjera da li je knjiga nedostupna - samo tada dozvoli rezervaciju
+        if (selected.getAvailableQuantity() <= 0 || "NEDOSTUPNO".equals(selected.getStatus())) {
+            // Provjeri da li korisnik već ima aktivnu rezervaciju za ovu knjigu
             try {
-                Reservation reservation = new Reservation(
-                        0,
-                        selected.getId(),
-                        selected.getTitle(),
-                        currentUser.getUsername(),
-                        LocalDate.now(),
-                        "AKTIVNA"
-                );
-                reservationDAO.create(reservation);
+                List<Reservation> userReservations = reservationDAO.getReservationsByUser(currentUser.getUsername());
+                boolean alreadyReserved = userReservations.stream()
+                        .anyMatch(r -> r.getBookId() == selected.getId() && "AKTIVNA".equals(r.getStatus()));
 
-                loadUserReservations();
-                showAlert("Uspjeh", "Knjiga uspješno rezervisana!", Alert.AlertType.INFORMATION);
+                if (alreadyReserved) {
+                    showAlert("Upozorenje", "Već imate aktivnu rezervaciju za ovu knjigu!", Alert.AlertType.WARNING);
+                    return;
+                }
             } catch (Exception e) {
-                showAlert("Greška", "Greška pri rezervaciji: " + e.getMessage(), Alert.AlertType.ERROR);
-                e.printStackTrace();
+                showAlert("Greška", "Greška pri provjeri rezervacija: " + e.getMessage(), Alert.AlertType.ERROR);
+                return;
+            }
+
+            // Potvrdi rezervaciju
+            Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+            confirm.setTitle("Potvrda rezervacije");
+            confirm.setHeaderText("Da li želite rezervisati ovu knjigu?");
+            confirm.setContentText(selected.getTitle() + " - " + selected.getAuthor() +
+                    "\n\nKnjiga je trenutno nedostupna (0 primjeraka).\n" +
+                    "Bićete obavješteni kada knjiga postane dostupna.");
+
+            Optional<ButtonType> result = confirm.showAndWait();
+            if (result.isPresent() && result.get() == ButtonType.OK) {
+                try {
+                    Reservation reservation = new Reservation(
+                            0,
+                            selected.getId(),
+                            selected.getTitle(),
+                            currentUser.getUsername(),
+                            LocalDate.now(),
+                            "AKTIVNA"
+                    );
+                    reservationDAO.create(reservation);
+
+                    loadUserReservations();
+                    showAlert("Uspjeh", "Knjiga '" + selected.getTitle() + "' je uspješno rezervisana!\n\n" +
+                            "Pratite tabelu 'Moje rezervacije' za status.", Alert.AlertType.INFORMATION);
+                } catch (Exception e) {
+                    showAlert("Greška", "Greška pri kreiranju rezervacije: " + e.getMessage(), Alert.AlertType.ERROR);
+                    e.printStackTrace();
+                }
             }
         }
     }

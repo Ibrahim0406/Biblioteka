@@ -182,11 +182,35 @@ public class BookDAO implements DAO<Book> {
 
     // Metoda za smanjenje količine dostupnih knjiga
     public void decreaseQuantity(int bookId) throws Exception {
-        String sql = "UPDATE books SET available_quantity = available_quantity - 1, status = CASE WHEN available_quantity - 1 <= 0 THEN 'NEDOSTUPNO' ELSE status END WHERE id = ?";
+        String checkSql = "SELECT available_quantity FROM books WHERE id = ?";
+        String updateSql = "UPDATE books SET available_quantity = available_quantity - 1, " +
+                "status = CASE WHEN available_quantity - 1 <= 0 THEN 'NEDOSTUPNO' ELSE 'DOSTUPNO' END " +
+                "WHERE id = ? AND available_quantity > 0";
+
         try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setInt(1, bookId);
-            pstmt.executeUpdate();
+             PreparedStatement checkStmt = conn.prepareStatement(checkSql);
+             PreparedStatement updateStmt = conn.prepareStatement(updateSql)) {
+
+            // Prvo provjeri trenutnu količinu
+            checkStmt.setInt(1, bookId);
+            ResultSet rs = checkStmt.executeQuery();
+
+            if (rs.next()) {
+                int currentQuantity = rs.getInt("available_quantity");
+                if (currentQuantity <= 0) {
+                    throw new Exception("Knjiga nije dostupna za pozajmljivanje! Trenutna količina: " + currentQuantity);
+                }
+            } else {
+                throw new Exception("Knjiga sa ID " + bookId + " ne postoji!");
+            }
+
+            // Samo ako je količina > 0, smanji je
+            updateStmt.setInt(1, bookId);
+            int rowsAffected = updateStmt.executeUpdate();
+
+            if (rowsAffected == 0) {
+                throw new Exception("Nije moguće smanjiti količinu - knjiga možda više nije dostupna!");
+            }
         }
     }
 
@@ -196,7 +220,11 @@ public class BookDAO implements DAO<Book> {
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setInt(1, bookId);
-            pstmt.executeUpdate();
+            int rowsAffected = pstmt.executeUpdate();
+
+            if (rowsAffected == 0) {
+                throw new Exception("Nije moguće povećati količinu - knjiga sa ID " + bookId + " ne postoji!");
+            }
         }
     }
 
