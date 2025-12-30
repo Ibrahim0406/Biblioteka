@@ -6,6 +6,8 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
 
+import java.time.LocalDate;
+
 public class BookFormController {
     @FXML private TextField titleField;
     @FXML private TextField authorField;
@@ -94,10 +96,12 @@ public class BookFormController {
             return false;
         }
 
+        int trenutnaGodina = LocalDate.now().getYear();
+
         try {
             int year = Integer.parseInt(yearField.getText().trim());
-            if (year < 1000 || year > 2100) {
-                showAlert("Validacija", "Godina mora biti između 1000 i 2100!", Alert.AlertType.WARNING);
+            if (year < 1450 || year > trenutnaGodina) {
+                showAlert("Validacija", "Godina mora biti između 1450 i " + trenutnaGodina, Alert.AlertType.WARNING);
                 yearField.requestFocus();
                 return false;
             }
@@ -122,8 +126,8 @@ public class BookFormController {
 
         try {
             int quantity = Integer.parseInt(quantityField.getText().trim());
-            if (quantity < 1) {
-                showAlert("Validacija", "Količina mora biti veća od 0!", Alert.AlertType.WARNING);
+            if (quantity < 0) {
+                showAlert("Validacija", "Količina ne moze biti negativna!", Alert.AlertType.WARNING);
                 quantityField.requestFocus();
                 return false;
             }
