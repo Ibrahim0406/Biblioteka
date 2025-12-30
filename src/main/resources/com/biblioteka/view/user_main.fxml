@@ -58,7 +58,7 @@
                         <TableColumn fx:id="yearColumn" text="Godina" prefWidth="70" style="-fx-text-fill: #2c3e50;"/>
                         <TableColumn fx:id="priceColumn" text="Cijena" prefWidth="90" style="-fx-text-fill: #2c3e50;"/>
                         <TableColumn fx:id="statusColumn" text="Status" prefWidth="90" style="-fx-text-fill: #2c3e50;"/>
-                        <TableColumn fx:id="quantityColumn" text="Dostupno" prefWidth="70" style="-fx-text-fill: #2c3e50;"/>
+                        <TableColumn fx:id="quantityColumn" text="Količina" prefWidth="70" style="-fx-text-fill: #2c3e50;"/>
                         <TableColumn fx:id="ratingColumn" text="Ocjena" prefWidth="130" style="-fx-text-fill: #2c3e50;"/>
                     </columns>
                     <columnResizePolicy>

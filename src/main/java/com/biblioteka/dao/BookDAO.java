@@ -21,7 +21,7 @@ public class BookDAO implements DAO<Book> {
             pstmt.setInt(4, book.getYear());
             pstmt.setDouble(5, book.getPrice());
             pstmt.setString(6, book.getStatus() != null ? book.getStatus() : "DOSTUPNO");
-            pstmt.setInt(7, book.getAvailableQuantity() > 0 ? book.getAvailableQuantity() : 1);
+            pstmt.setInt(7, book.getAvailableQuantity() > 0 ? book.getAvailableQuantity() : 0);
             pstmt.executeUpdate();
         }
     }
@@ -39,7 +39,6 @@ public class BookDAO implements DAO<Book> {
                 String status = rs.getString("status");
                 int availableQuantity = rs.getInt("available_quantity");
                 if (status == null) status = "DOSTUPNO";
-                if (availableQuantity == 0) availableQuantity = 1;
                 return new Book(
                         rs.getInt("id"),
                         rs.getString("title"),
@@ -68,7 +67,6 @@ public class BookDAO implements DAO<Book> {
                 String status = rs.getString("status");
                 int availableQuantity = rs.getInt("available_quantity");
                 if (status == null) status = "DOSTUPNO";
-                if (availableQuantity == 0) availableQuantity = 1;
                 books.add(new Book(
                         rs.getInt("id"),
                         rs.getString("title"),
@@ -102,8 +100,6 @@ public class BookDAO implements DAO<Book> {
                 String status = rs.getString("status");
                 int availableQuantity = rs.getInt("available_quantity");
                 if (status == null) status = "DOSTUPNO";
-                if (availableQuantity == 0) availableQuantity = 1;
-
                 books.add(new BookWithRating(
                         rs.getInt("id"),
                         rs.getString("title"),
@@ -143,7 +139,6 @@ public class BookDAO implements DAO<Book> {
                 String status = rs.getString("status");
                 int availableQuantity = rs.getInt("available_quantity");
                 if (status == null) status = "DOSTUPNO";
-                if (availableQuantity == 0) availableQuantity = 1;
 
                 books.add(new BookWithRating(
                         rs.getInt("id"),
@@ -184,7 +179,7 @@ public class BookDAO implements DAO<Book> {
     public void decreaseQuantity(int bookId) throws Exception {
         String checkSql = "SELECT available_quantity FROM books WHERE id = ?";
         String updateSql = "UPDATE books SET available_quantity = available_quantity - 1, " +
-                "status = CASE WHEN available_quantity - 1 <= 0 THEN 'NEDOSTUPNO' ELSE 'DOSTUPNO' END " +
+                "status = CASE WHEN available_quantity - 1 < 0 THEN 'NEDOSTUPNO' ELSE 'DOSTUPNO' END " +
                 "WHERE id = ? AND available_quantity > 0";
 
         try (Connection conn = DatabaseConnection.getConnection();

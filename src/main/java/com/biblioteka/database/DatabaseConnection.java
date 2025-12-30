@@ -40,7 +40,7 @@ public class DatabaseConnection {
                             "year INT NOT NULL, " +
                             "price DECIMAL(10,2) NOT NULL, " +
                             "status VARCHAR(20) DEFAULT 'DOSTUPNO', " +
-                            "available_quantity INT DEFAULT 0 CHECK (avilable_quantity >= 0))"
+                            "available_quantity INT DEFAULT 0)"
             );
 
             // Dodavanje novih kolona ako već postoje knjige bez njih

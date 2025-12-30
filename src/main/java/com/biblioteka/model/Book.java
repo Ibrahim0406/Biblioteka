@@ -18,7 +18,7 @@ public class Book {
     }
 
     public Book(int id, String title, String author, String isbn, int year, double price) {
-        this(id, title, author, isbn, year, price, "DOSTUPNO", 1);
+        this(id, title, author, isbn, year, price, "DOSTUPNO", 0);
     }
 
     public Book(int id, String title, String author, String isbn, int year, double price, String status, int availableQuantity) {
